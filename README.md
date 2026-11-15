@@ -32,7 +32,7 @@ The cart state is stored centrally inside a React Context (CartContext in src/co
 
 ## Screenshots
 ### Products Page
-![Products Page](src\assets\ProductsPage.png)
+![Products Page](https://github.com/j-nollora/LVCC-Campus-Store/blob/main/src/assets/ProductsPage.png?raw=true)
 
 ### Cart Page
-![Cart Page](src\assets\CartPage.png)
+![Cart Page](https://github.com/j-nollora/LVCC-Campus-Store/blob/main/src/assets/CartPage.png?raw=true)
