@@ -1,21 +1,73 @@
-import { PRODUCTS } from "../data/products";
+import { useEffect, useState } from "react";
+import { getProducts, sendDemoProduct } from "../api";
 import { useCart } from "../context/CartContext";
 
 export default function ProductsPage() {
   const { addToCart } = useCart();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [postStatus, setPostStatus] = useState("");
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadProducts() {
+      try {
+        const data = await getProducts();
+        if (!ignore) setProducts(data);
+      } catch (err) {
+        if (!ignore) setError(err.message);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+
+    loadProducts();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  async function handleTestPost() {
+    try {
+      const res = await sendDemoProduct({ name: "LVCC Marker", price: 35 });
+      setPostStatus(`${res.message}: ${res.data.name} (₱${res.data.price})`);
+    } catch (err) {
+      setPostStatus(`POST Error: ${err.message}`);
+    }
+  }
+
+  if (loading) return <p style={{ padding: "2rem" }}>Loading products...</p>;
+  if (error) return <p role="alert" style={{ padding: "2rem", color: "red" }}>Error: {error}</p>;
+  if (products.length === 0) return <p style={{ padding: "2rem" }}>No products found.</p>;
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h1>Campus Store Products</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h1>Campus Store Products</h1>
+        <button onClick={handleTestPost} style={styles.button}>
+          Test Preflight POST
+        </button>
+      </div>
+
+      {postStatus && <p style={{ color: "#1e3a8a", fontWeight: "bold" }}>{postStatus}</p>}
+
       <div style={styles.grid}>
-        {PRODUCTS.map((product) => (
+        {products.map((product) => (
           <div key={product.id} style={styles.card}>
-            <span style={styles.badge}>{product.category}</span>
+            <span style={styles.badge}>{product.category || "Campus Item"}</span>
             <h3>{product.name}</h3>
-            <p style={styles.price}>
-              ₱{(product.price_centavos / 100).toFixed(2)}
-            </p>
-            <button onClick={() => addToCart(product)} style={styles.button}>
+            <p style={styles.price}>₱{Number(product.price).toFixed(2)}</p>
+            <button
+              onClick={() =>
+                addToCart({
+                  ...product,
+                  price_centavos: product.price * 100,
+                })
+              }
+              style={styles.button}
+            >
               Add to Cart
             </button>
           </div>
